@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  name         String?
+  nickname     String  @unique
+  refreshToken String? @db.Text()
+  profile      String?
+
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt()
+  deletedAt DateTime? @db.Timestamptz
+
+  channels Channel[] @relation("ChannelMembers")
+  messages Message[]
+}
+
+model Channel {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt()
+  deletedAt DateTime? @db.Timestamptz
+
+  members  User[]    @relation("ChannelMembers")
+  messages Message[]
+}
+
+model Message {
+  id        Int    @id @default(autoincrement())
+  content   String
+  userId    Int
+  channelId Int
+
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @default(now()) @updatedAt()
+  deletedAt DateTime? @db.Timestamptz
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+}
